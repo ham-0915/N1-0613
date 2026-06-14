@@ -2,16 +2,6 @@ name: N1-ImmortalWrt
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: '选择编译版本'
-        required: false
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - '24.10'
-          - '25.12'
 
 jobs:
   build:
@@ -27,8 +17,6 @@ jobs:
             branch: 'openwrt-25.12'
             kernel: '6.18.y'
             keep: 15
-
-    if: github.event.inputs.version == 'all' || github.event.inputs.version == matrix.tag || github.event.inputs.version == ''
 
     runs-on: ubuntu-24.04
     permissions:

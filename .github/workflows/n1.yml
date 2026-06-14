@@ -159,15 +159,16 @@ jobs:
           echo "::endgroup::"
           echo "::warning::多线程失败，切换单线程排错..."
           echo "::group::单线程编译 V=s"
-          make -j1 V=s
+          if make -j1 V=s; then
+            echo "status=success" >> "$GITHUB_OUTPUT"
+          fi
           echo "::endgroup::"
-          echo "status=success" >> "$GITHUB_OUTPUT"
         fi
 
-    - name: 打包 N1 固件
+    - name: 打包固件
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
       run: |
-        echo "::group::整理编译产物"
+        echo "::group::打包固件"
         mkdir -p /workdir/upload openwrt-armvirt
         cp openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz /workdir/upload/
         mv openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz openwrt-armvirt/
@@ -195,41 +196,36 @@ jobs:
         retention-days: 7
         if-no-files-found: warn
 
-    - name: 上传 Release
-      id: release
+    - name: 发布 Release
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
       run: |
-        echo "::group::生成 Release 描述"
         sudo chown -R "$USER:$GROUPS" /opt/openwrt_packit/output 2>/dev/null || true
-        sudo mkdir -p /workdir/upload
-        [ -d /opt/openwrt_packit/output ] && sudo cp /opt/openwrt_packit/output/* /workdir/upload/
-        sudo chown -R "$USER:$GROUPS" /workdir/upload
+        VER=${TAG//.}
+        TAG_NAME="N1-${VER}_$(date +%Y%m%d)"
+        DATE="$(date '+%Y-%m-%d %H:%M')"
         {
           echo "- **源码**: https://github.com/immortalwrt/immortalwrt/tree/$BRANCH"
           echo "- **网关**: 192.168.123.2 | **账户**: root | **密码**: password"
           echo ""
           echo "### 更新日志"
           [ -f "N1/logs.txt" ] && cat "N1/logs.txt" || echo "- 常规更新"
-        } > /workdir/upload/desc.txt
-        VER=${TAG//.}
-        echo "tag=N1-${VER}_$(date +%Y%m%d)" >> "$GITHUB_OUTPUT"
-        echo "date=$(date '+%Y-%m-%d %H:%M')" >> "$GITHUB_OUTPUT"
-        echo "产物列表:"
-        ls -lh /workdir/upload/
-        echo "::endgroup::"
+        } > /tmp/desc.txt
+        echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
+        echo "date=$DATE" >> "$GITHUB_OUTPUT"
+      id: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: 发布 Release
+    - name: 上传 Release
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
       uses: ncipollo/release-action@v1
       with:
         name: "OpenWrt-N1 ${{ env.TAG }} ${{ steps.release.outputs.date }}"
         tag: ${{ steps.release.outputs.tag }}
-        artifacts: /workdir/upload/openwrt*
+        artifacts: /opt/openwrt_packit/output/openwrt*
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        bodyFile: /workdir/upload/desc.txt
+        bodyFile: /tmp/desc.txt
 
     - name: 清理旧记录
       if: steps.ver.outputs.run == 'true'

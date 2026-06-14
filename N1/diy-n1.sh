@@ -69,6 +69,7 @@ log "24.10软件源配置"
 
 # ── opkg 配置（仅 24.10）───────────────────────────────────
 [ "$VERSION" = "24.10" ] && {
+  mkdir -p package/base-files/files/etc/opkg
   cat > package/base-files/files/etc/opkg.conf << 'EOF'
 dest root /
 dest ram /tmp

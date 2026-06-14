@@ -1,5 +1,4 @@
-# N1 固件自动编译（支持 24.10 / 25.12 并行编译）
-name: N1 Firmware
+name: 编译N1固件
 
 on:
   repository_dispatch:
@@ -14,19 +13,15 @@ on:
           - all        # 同时编译两个版本
           - '24.10'    # 仅编译 24.10
           - '25.12'    # 仅编译 25.12
-      kernel:
-        description: '内核版本（留空自动选择最新）'
-        required: false
-        default: ''
 
 jobs:
   build:
     strategy:
       matrix:
         include:
-          - tag: '24.10'           
+          - tag: '24.10'           # ImmortalWrt 24.10 分支
             branch: 'openwrt-24.10'
-            kernel: '6.6.y'        
+            kernel: '6.6.y'        # N1 内核版本
             keep: 15               # 保留最近 N 个 Release
           - tag: '25.12'
             branch: 'openwrt-25.12'
@@ -41,7 +36,6 @@ jobs:
     env:
       TAG: ${{ matrix.tag }}
       BRANCH: ${{ matrix.branch }}
-      KERNEL: ${{ inputs.kernel || matrix.kernel }}
 
     steps:
     - uses: actions/checkout@v4
@@ -166,7 +160,7 @@ jobs:
         KERNEL_AUTO_LATEST: true
         KERNEL_REPO_URL: ophub/kernel
         KERNEL_USAGE: flippy
-        KERNEL_VERSION_NAME: ${{ env.KERNEL }}
+        KERNEL_VERSION_NAME: ${{ matrix.kernel }}
 
     # ── Release ───────────────────────────────────────────────
     - name: 上传 Release

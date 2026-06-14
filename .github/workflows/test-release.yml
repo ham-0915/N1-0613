@@ -43,9 +43,9 @@ jobs:
     - name: 上传 Release
       id: release
       run: |
-        sudo mkdir -p /workdir/upload && sudo chown "$USER:$GROUPS" /workdir
-        sudo chown -R "$USER:$GROUPS" /opt/openwrt_packit/output 2>/dev/null || true
-        [ -d /opt/openwrt_packit/output ] && cp /opt/openwrt_packit/output/* /workdir/upload/
+        sudo mkdir -p /workdir/upload
+        [ -d /opt/openwrt_packit/output ] && sudo cp /opt/openwrt_packit/output/* /workdir/upload/
+        sudo chown -R "$USER:$GROUPS" /workdir/upload
         {
           echo "- **测试**: 新标签格式验证"
           echo "- **网关**: 192.168.123.2 | **账户**: root | **密码**: password"

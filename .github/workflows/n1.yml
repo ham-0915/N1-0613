@@ -184,6 +184,7 @@ jobs:
       if: steps.compile.outputs.status == 'success'
       run: |
         echo "::group::生成 Release 描述"
+        sudo chown -R "$USER:$GROUPS" /opt/openwrt_packit/output 2>/dev/null || true
         [ -d /opt/openwrt_packit/output ] && mv /opt/openwrt_packit/output/* /workdir/upload/
         {
           echo "- **源码**: https://github.com/immortalwrt/immortalwrt/tree/$BRANCH"

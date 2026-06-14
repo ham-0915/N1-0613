@@ -1,0 +1,66 @@
+name: Test Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: '25.12'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: 下载已有固件
+      run: |
+        mkdir -p openwrt-armvirt
+        wget -q -O openwrt-armvirt/openwrt-armsr-armv8-generic-rootfs.tar.gz \
+          "https://github.com/ham-0915/N1-0407/releases/download/N1-25.12_20260613/openwrt-armsr-armv8-generic-rootfs.tar.gz"
+        ls -lh openwrt-armvirt/
+
+    - name: 生成固件
+      uses: unifreq/openwrt_packit@master
+      env:
+        WHOAMI: ham
+        OPENWRT_ARMVIRT: openwrt-armvirt/*-generic-rootfs.tar.gz
+        PACKAGE_SOC: s905d
+        KERNEL_AUTO_LATEST: true
+        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_USAGE: flippy
+        KERNEL_VERSION_NAME: '6.18.y'
+
+    - name: 上传 Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: N1-test-${{ env.TAG }}
+        path: /opt/openwrt_packit/output/*
+        retention-days: 1
+        if-no-files-found: warn
+
+    - name: 上传 Release
+      id: release
+      run: |
+        mkdir -p /workdir/upload
+        [ -d /opt/openwrt_packit/output ] && cp /opt/openwrt_packit/output/* /workdir/upload/
+        {
+          echo "- **测试**: 新标签格式验证"
+          echo "- **网关**: 192.168.123.2 | **账户**: root | **密码**: password"
+        } > /workdir/upload/desc.txt
+        VER=${TAG//.}
+        echo "tag=N1-${VER}_$(date +%Y%m%d)" >> "$GITHUB_OUTPUT"
+        echo "date=$(date '+%Y-%m-%d %H:%M')" >> "$GITHUB_OUTPUT"
+        echo "产物列表:"
+        ls -lh /workdir/upload/
+
+    - name: 发布 Release
+      uses: ncipollo/release-action@v1
+      with:
+        name: "OpenWrt-N1 测试 ${{ steps.release.outputs.date }}"
+        tag: ${{ steps.release.outputs.tag }}
+        artifacts: /workdir/upload/openwrt*
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        bodyFile: /workdir/upload/desc.txt

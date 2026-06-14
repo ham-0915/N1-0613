@@ -34,7 +34,7 @@ jobs:
     env:
       TAG: ${{ matrix.tag }}
       BRANCH: ${{ matrix.branch }}
-
+      
     steps:
     - uses: actions/checkout@v4
 
@@ -56,6 +56,7 @@ jobs:
 
     - name: 安装编译依赖
       run: |
+        echo "::group::安装编译依赖"
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
           bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk \
@@ -67,12 +68,15 @@ jobs:
           python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig \
           texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd libfuse-dev
         sudo timedatectl set-timezone Asia/Shanghai
+        echo "::endgroup::"
 
     - name: 克隆源码
       working-directory: /workdir
       run: |
+        echo "::group::克隆源码 ($BRANCH)"
         git clone --depth=1 https://github.com/immortalwrt/immortalwrt -b "$BRANCH" openwrt
         ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
+        echo "::endgroup::"
 
     - name: 恢复 Ccache
       uses: actions/cache@v5
@@ -83,6 +87,7 @@ jobs:
 
     - name: 加载 Feeds
       run: |
+        echo "::group::生成 feeds.conf.default"
         printf '%s\n' \
           "src-git packages https://github.com/immortalwrt/packages.git;$BRANCH" \
           "src-git luci https://github.com/immortalwrt/luci.git;$BRANCH" \
@@ -90,20 +95,32 @@ jobs:
           "src-git telephony https://github.com/openwrt/telephony.git;$BRANCH" \
           "src-git video https://github.com/openwrt/video.git;$BRANCH" \
           > openwrt/feeds.conf.default
+        cat openwrt/feeds.conf.default
+        echo "::endgroup::"
+        echo "::group::feeds update & install"
         cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
+        echo "::endgroup::"
 
     - name: 应用 DIY 配置
       run: |
+        echo "::group::复制配置文件"
         cp N1/n1.config openwrt/.config
         chmod +x N1/diy-n1.sh
+        echo "::endgroup::"
+        echo "::group::执行 diy-n1.sh"
         cd openwrt && "$GITHUB_WORKSPACE/N1/diy-n1.sh"
+        echo "::endgroup::"
 
     - name: 下载源码包
       working-directory: /workdir/openwrt
       run: |
+        echo "::group::make defconfig"
         make defconfig
+        echo "::endgroup::"
+        echo "::group::make download"
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
+        echo "::endgroup::"
 
     - name: 编译固件
       id: compile
@@ -111,16 +128,27 @@ jobs:
       run: |
         export PATH="/usr/lib/ccache:$PATH"
         ccache -M 5G && ccache -z
-        make -j$(nproc) || make -j1 V=s
-        echo "status=success" >> "$GITHUB_OUTPUT"
+        echo "::group::多线程编译 -j$(nproc)"
+        if make -j$(nproc); then
+          echo "status=success" >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
+        else
+          echo "::endgroup::"
+          echo "::warning::多线程失败，切换单线程排错..."
+          echo "::group::单线程编译 V=s"
+          make -j1 V=s
+          echo "::endgroup::"
+        fi
 
     - name: 打包 N1 固件
       if: steps.compile.outputs.status == 'success'
       run: |
+        echo "::group::整理编译产物"
         mkdir -p /workdir/upload openwrt-armvirt
         cp openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz /workdir/upload/
         mv openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz openwrt-armvirt/
         rm -rf /workdir/openwrt
+        echo "::endgroup::"
 
     - name: 生成固件
       if: steps.compile.outputs.status == 'success'
@@ -137,6 +165,7 @@ jobs:
     - name: 上传 Release
       if: steps.compile.outputs.status == 'success'
       run: |
+        echo "::group::生成 Release 描述"
         [ -d /opt/openwrt_packit/output ] && mv /opt/openwrt_packit/output/* /workdir/upload/
         {
           echo "- **源码**: https://github.com/immortalwrt/immortalwrt/tree/$BRANCH"
@@ -145,6 +174,9 @@ jobs:
           echo "### 更新日志"
           [ -f "N1/logs.txt" ] && cat "N1/logs.txt" || echo "- 常规更新"
         } > /workdir/upload/desc.txt
+        echo "产物列表:"
+        ls -lh /workdir/upload/
+        echo "::endgroup::"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1,7 +1,6 @@
-name: 编译N1固件
+name: N1-ImmortalWrt 固件编译
 
 on:
-  repository_dispatch:
   workflow_dispatch:
     inputs:
       version:

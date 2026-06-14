@@ -187,15 +187,6 @@ jobs:
         KERNEL_USAGE: flippy
         KERNEL_VERSION_NAME: ${{ matrix.kernel }}
 
-    - name: 上传 Artifacts
-      if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
-      uses: actions/upload-artifact@v4
-      with:
-        name: N1-${{ env.TAG }}
-        path: /opt/openwrt_packit/output/*
-        retention-days: 7
-        if-no-files-found: warn
-
     - name: 发布 Release
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
       run: |

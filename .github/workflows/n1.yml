@@ -16,6 +16,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - tag: '24.10'
@@ -26,6 +27,11 @@ jobs:
             branch: 'openwrt-25.12'
             kernel: '6.18.y'
             keep: 15
+
+    if: >-
+      github.event.inputs.version == 'all' ||
+      github.event.inputs.version == matrix.tag ||
+      github.event.inputs.version == ''
 
     runs-on: ubuntu-24.04
     permissions:
@@ -139,6 +145,7 @@ jobs:
           echo "::group::单线程编译 V=s"
           make -j1 V=s
           echo "::endgroup::"
+          echo "status=success" >> "$GITHUB_OUTPUT"
         fi
 
     - name: 打包 N1 固件
@@ -170,6 +177,7 @@ jobs:
         name: N1-${{ env.TAG }}
         path: /opt/openwrt_packit/output/*
         retention-days: 7
+        if-no-files-found: warn
 
     - name: 上传 Release
       id: release
@@ -184,7 +192,8 @@ jobs:
           echo "### 更新日志"
           [ -f "N1/logs.txt" ] && cat "N1/logs.txt" || echo "- 常规更新"
         } > /workdir/upload/desc.txt
-        echo "tag=N1-${TAG}_$(date +%Y%m%d)" >> "$GITHUB_OUTPUT"
+        VER=${TAG//.}
+        echo "tag=N1-${VER}_$(date +%Y%m%d)" >> "$GITHUB_OUTPUT"
         echo "date=$(date '+%Y-%m-%d %H:%M')" >> "$GITHUB_OUTPUT"
         echo "产物列表:"
         ls -lh /workdir/upload/

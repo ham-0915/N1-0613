@@ -34,6 +34,7 @@ jobs:
     env:
       TAG: ${{ matrix.tag }}
       BRANCH: ${{ matrix.branch }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       
     steps:
     - uses: actions/checkout@v4
@@ -162,7 +163,16 @@ jobs:
         KERNEL_USAGE: flippy
         KERNEL_VERSION_NAME: ${{ matrix.kernel }}
 
+    - name: 上传 Artifacts
+      if: steps.compile.outputs.status == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: N1-${{ env.TAG }}
+        path: /opt/openwrt_packit/output/*
+        retention-days: 7
+
     - name: 上传 Release
+      id: release
       if: steps.compile.outputs.status == 'success'
       run: |
         echo "::group::生成 Release 描述"
@@ -174,6 +184,8 @@ jobs:
           echo "### 更新日志"
           [ -f "N1/logs.txt" ] && cat "N1/logs.txt" || echo "- 常规更新"
         } > /workdir/upload/desc.txt
+        echo "tag=N1-${TAG}_$(date +%Y%m%d)" >> "$GITHUB_OUTPUT"
+        echo "date=$(date '+%Y-%m-%d %H:%M')" >> "$GITHUB_OUTPUT"
         echo "产物列表:"
         ls -lh /workdir/upload/
         echo "::endgroup::"
@@ -184,8 +196,8 @@ jobs:
       if: steps.compile.outputs.status == 'success'
       uses: ncipollo/release-action@v1
       with:
-        name: "OpenWrt-N1 ${{ env.TAG }} $(date '+%Y-%m-%d %H:%M')"
-        tag: "N1-${{ env.TAG }}_$(date +%Y%m%d)"
+        name: "OpenWrt-N1 ${{ env.TAG }} ${{ steps.release.outputs.date }}"
+        tag: ${{ steps.release.outputs.tag }}
         artifacts: /workdir/upload/openwrt*
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}

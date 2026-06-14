@@ -190,6 +190,7 @@ jobs:
     - name: 发布 Release
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
       run: |
+        echo "::group::生成 Release 描述"
         sudo chown -R "$USER:$GROUPS" /opt/openwrt_packit/output 2>/dev/null || true
         VER=${TAG//.}
         TAG_NAME="N1-${VER}_$(date +%Y%m%d)"
@@ -203,6 +204,9 @@ jobs:
         } > /tmp/desc.txt
         echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
         echo "date=$DATE" >> "$GITHUB_OUTPUT"
+        echo "标签: $TAG_NAME"
+        echo "日期: $DATE"
+        echo "::endgroup::"
       id: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

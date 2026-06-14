@@ -29,6 +29,7 @@ jobs:
             keep: 15
 
     runs-on: ubuntu-24.04
+    timeout-minutes: 360
     permissions:
       actions: write
       contents: write
@@ -58,7 +59,7 @@ jobs:
 
     - name: 最大化磁盘空间
       if: steps.ver.outputs.run == 'true'
-      uses: easimon/maximize-build-space@master
+      uses: easimon/maximize-build-space@v2
       with:
         root-reserve-mb: 10240
         swap-size-mb: 1024
@@ -101,7 +102,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ~/.ccache
-        key: ${{ runner.os }}-ccache-${{ env.TAG }}-${{ hashFiles('N1/n1.config') }}
+        key: ${{ runner.os }}-ccache-${{ env.TAG }}-${{ hashFiles('N1/n1.config', 'N1/diy-n1.sh') }}
         restore-keys: ${{ runner.os }}-ccache-${{ env.TAG }}-
 
     - name: 加载 Feeds
@@ -177,7 +178,7 @@ jobs:
 
     - name: 生成固件
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
-      uses: unifreq/openwrt_packit@master
+      uses: unifreq/openwrt_packit@v1
       env:
         WHOAMI: ham
         OPENWRT_ARMVIRT: openwrt-armvirt/*-generic-rootfs.tar.gz
@@ -232,7 +233,7 @@ jobs:
 
     - name: 清理旧 Release
       if: steps.ver.outputs.run == 'true'
-      uses: dev-drprasad/delete-older-releases@master
+      uses: dev-drprasad/delete-older-releases@v0.3.4
       with:
         keep_latest: ${{ matrix.keep }}
         delete_tags: true

@@ -59,7 +59,7 @@ jobs:
 
     - name: 最大化磁盘空间
       if: steps.ver.outputs.run == 'true'
-      uses: easimon/maximize-build-space@v2
+      uses: easimon/maximize-build-space@master
       with:
         root-reserve-mb: 10240
         swap-size-mb: 1024
@@ -102,7 +102,7 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ~/.ccache
-        key: ${{ runner.os }}-ccache-${{ env.TAG }}-${{ hashFiles('N1/n1.config', 'N1/diy-n1.sh') }}
+        key: ${{ runner.os }}-ccache-${{ env.TAG }}-${{ hashFiles('N1/n1.config') }}
         restore-keys: ${{ runner.os }}-ccache-${{ env.TAG }}-
 
     - name: 加载 Feeds
@@ -178,7 +178,7 @@ jobs:
 
     - name: 生成固件
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
-      uses: unifreq/openwrt_packit@v1
+      uses: unifreq/openwrt_packit@master
       env:
         WHOAMI: ham
         OPENWRT_ARMVIRT: openwrt-armvirt/*-generic-rootfs.tar.gz
@@ -214,7 +214,7 @@ jobs:
 
     - name: 上传 Release
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@master
       with:
         name: "OpenWrt-N1 ${{ env.TAG }} ${{ steps.release.outputs.date }}"
         tag: ${{ steps.release.outputs.tag }}
@@ -225,7 +225,7 @@ jobs:
 
     - name: 清理旧记录
       if: steps.ver.outputs.run == 'true'
-      uses: Mattraks/delete-workflow-runs@v2
+      uses: Mattraks/delete-workflow-runs@master
       with:
         retain_days: 5
         keep_minimum_runs: 10
@@ -233,7 +233,7 @@ jobs:
 
     - name: 清理旧 Release
       if: steps.ver.outputs.run == 'true'
-      uses: dev-drprasad/delete-older-releases@v0.3.4
+      uses: dev-drprasad/delete-older-releases@master
       with:
         keep_latest: ${{ matrix.keep }}
         delete_tags: true

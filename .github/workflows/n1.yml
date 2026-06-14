@@ -1,0 +1,213 @@
+# N1 固件自动编译（支持 24.10 / 25.12 并行编译）
+name: N1 Firmware
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '选择编译版本'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all        # 同时编译两个版本
+          - '24.10'    # 仅编译 24.10
+          - '25.12'    # 仅编译 25.12
+      kernel:
+        description: '内核版本（留空自动选择最新）'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - tag: '24.10'           
+            branch: 'openwrt-24.10'
+            kernel: '6.6.y'        
+            keep: 15               # 保留最近 N 个 Release
+          - tag: '25.12'
+            branch: 'openwrt-25.12'
+            kernel: '6.18.y'
+            keep: 15
+
+    runs-on: ubuntu-24.04
+    if: inputs.version == 'all' || inputs.version == matrix.tag || github.event_name == 'repository_dispatch'
+    permissions:
+      actions: write
+      contents: write
+    env:
+      TAG: ${{ matrix.tag }}
+      BRANCH: ${{ matrix.branch }}
+      KERNEL: ${{ inputs.kernel || matrix.kernel }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # ── 编译空间 ──────────────────────────────────────────────
+    - name: 准备编译空间
+      run: |
+        sudo mkdir -p /workdir && sudo chown "$USER:$GROUPS" /workdir
+        echo "✓ 挂载点 /workdir 就绪"
+
+    - name: 最大化磁盘空间
+      uses: easimon/maximize-build-space@master
+      with:
+        root-reserve-mb: 10240
+        swap-size-mb: 1024
+        build-mount-path: /workdir
+        overprovision-lvm: 'true'
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
+
+    # ── 安装依赖 ──────────────────────────────────────────────
+    - name: 安装编译依赖
+      run: |
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+          bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk \
+          gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool \
+          libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
+          libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool \
+          libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano ninja-build p7zip \
+          p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils \
+          python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig \
+          texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd libfuse-dev
+        sudo timedatectl set-timezone Asia/Shanghai
+        echo "✓ 编译依赖安装完成"
+
+    # ── 克隆源码 ──────────────────────────────────────────────
+    - name: 克隆源码
+      working-directory: /workdir
+      run: |
+        echo ">>> 克隆分支: $BRANCH"
+        git clone --depth=1 https://github.com/immortalwrt/immortalwrt -b "$BRANCH" openwrt
+        ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
+        echo "✓ 源码克隆完成"
+
+    # ── Ccache ────────────────────────────────────────────────
+    - name: 恢复 Ccache
+      uses: actions/cache@v5
+      with:
+        path: ~/.ccache
+        key: ${{ runner.os }}-ccache-${{ env.TAG }}-${{ hashFiles('N1/n1.config') }}
+        restore-keys: ${{ runner.os }}-ccache-${{ env.TAG }}-
+
+    # ── Feeds ─────────────────────────────────────────────────
+    - name: 加载 Feeds
+      run: |
+        printf '%s\n' \
+          "src-git packages https://github.com/immortalwrt/packages.git;$BRANCH" \
+          "src-git luci https://github.com/immortalwrt/luci.git;$BRANCH" \
+          "src-git routing https://github.com/openwrt/routing.git;$BRANCH" \
+          "src-git telephony https://github.com/openwrt/telephony.git;$BRANCH" \
+          "src-git video https://github.com/openwrt/video.git;$BRANCH" \
+          > openwrt/feeds.conf.default
+        echo ">>> feeds.conf.default:"
+        cat openwrt/feeds.conf.default
+        cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
+        echo "✓ Feeds 加载完成"
+
+    # ── DIY ───────────────────────────────────────────────────
+    - name: 应用 DIY 配置
+      run: |
+        cp N1/n1.config openwrt/.config
+        chmod +x N1/diy-n1.sh
+        cd openwrt && "$GITHUB_WORKSPACE/N1/diy-n1.sh"
+        echo "✓ DIY 配置应用完成"
+
+    # ── 下载 ──────────────────────────────────────────────────
+    - name: 下载源码包
+      working-directory: /workdir/openwrt
+      run: |
+        make defconfig
+        echo ">>> 开始下载源码包..."
+        make download -j8
+        find dl -size -1024c -exec rm -f {} \;
+        echo "✓ 下载完成"
+
+    # ── 编译 ──────────────────────────────────────────────────
+    - name: 编译固件
+      id: compile
+      working-directory: /workdir/openwrt
+      run: |
+        export PATH="/usr/lib/ccache:$PATH"
+        ccache -M 5G && ccache -z
+        echo ">>> 开始编译 (多线程)..."
+        make -j$(nproc) || {
+          echo "::warning::多线程失败，切换单线程排错..."
+          make -j1 V=s
+        }
+        echo "status=success" >> "$GITHUB_OUTPUT"
+        echo "✓ 编译完成"
+
+    # ── 打包 ──────────────────────────────────────────────────
+    - name: 打包 N1 固件
+      if: steps.compile.outputs.status == 'success'
+      run: |
+        mkdir -p /workdir/upload openwrt-armvirt
+        cp openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz /workdir/upload/
+        mv openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz openwrt-armvirt/
+        rm -rf /workdir/openwrt
+        echo "✓ 打包完成，释放源码空间"
+
+    - name: 生成固件
+      if: steps.compile.outputs.status == 'success'
+      uses: unifreq/openwrt_packit@master
+      env:
+        WHOAMI: ham
+        OPENWRT_ARMVIRT: openwrt-armvirt/*-generic-rootfs.tar.gz
+        PACKAGE_SOC: s905d
+        KERNEL_AUTO_LATEST: true
+        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_USAGE: flippy
+        KERNEL_VERSION_NAME: ${{ env.KERNEL }}
+
+    # ── Release ───────────────────────────────────────────────
+    - name: 上传 Release
+      if: steps.compile.outputs.status == 'success'
+      run: |
+        [ -d /opt/openwrt_packit/output ] && mv /opt/openwrt_packit/output/* /workdir/upload/
+        {
+          echo "- **源码**: https://github.com/immortalwrt/immortalwrt/tree/$BRANCH"
+          echo "- **网关**: 192.168.123.2 | **账户**: root | **密码**: password"
+          echo ""
+          echo "### 更新日志"
+          [ -f "N1/logs.txt" ] && cat "N1/logs.txt" || echo "- 常规更新"
+        } > /workdir/upload/desc.txt
+        echo ">>> Release 产物:"
+        ls -lh /workdir/upload/
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 发布 Release
+      if: steps.compile.outputs.status == 'success'
+      uses: ncipollo/release-action@v1
+      with:
+        name: "OpenWrt-N1 ${{ env.TAG }} $(date '+%Y-%m-%d %H:%M')"
+        tag: "N1-${{ env.TAG }}_$(date +%Y%m%d)"
+        artifacts: /workdir/upload/openwrt*
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        bodyFile: /workdir/upload/desc.txt
+
+    # ── 清理 ──────────────────────────────────────────────────
+    - name: 清理旧记录
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+        retain_days: 5
+        keep_minimum_runs: 10
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 清理旧 Release
+      uses: dev-drprasad/delete-older-releases@master
+      with:
+        keep_latest: ${{ matrix.keep }}
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

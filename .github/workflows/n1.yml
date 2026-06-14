@@ -28,10 +28,7 @@ jobs:
             kernel: '6.18.y'
             keep: 15
 
-    if: >-
-      github.event.inputs.version == 'all' ||
-      github.event.inputs.version == matrix.tag ||
-      github.event.inputs.version == ''
+    if: github.event.inputs.version == 'all' || github.event.inputs.version == matrix.tag || github.event.inputs.version == ''
 
     runs-on: ubuntu-24.04
     permissions:

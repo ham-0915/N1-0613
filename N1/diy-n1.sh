@@ -63,12 +63,12 @@ git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/luci-app-
 git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/openwrt-bandix
 
 # ============================================================
-# 注入24.10软件源配置文件
+# 注入软件源配置文件（仅 24.10）
 # ============================================================
-log "24.10软件源配置"
 
 # ── opkg 配置（仅 24.10）───────────────────────────────────
 [ "$VERSION" = "24.10" ] && {
+  log "24.10 软件源配置"
   mkdir -p package/base-files/files/etc/opkg
   cat > package/base-files/files/etc/opkg.conf << 'EOF'
 dest root /

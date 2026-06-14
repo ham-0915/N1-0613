@@ -43,7 +43,7 @@ jobs:
     - name: 上传 Release
       id: release
       run: |
-        mkdir -p /workdir/upload
+        sudo mkdir -p /workdir/upload && sudo chown "$USER:$GROUPS" /workdir
         [ -d /opt/openwrt_packit/output ] && cp /opt/openwrt_packit/output/* /workdir/upload/
         {
           echo "- **测试**: 新标签格式验证"

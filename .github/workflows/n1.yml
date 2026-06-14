@@ -214,7 +214,7 @@ jobs:
 
     - name: 上传 Release
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
-      uses: ncipollo/release-action@master
+      uses: ncipollo/release-action@v1
       with:
         name: "OpenWrt-N1 ${{ env.TAG }} ${{ steps.release.outputs.date }}"
         tag: ${{ steps.release.outputs.tag }}
@@ -225,7 +225,7 @@ jobs:
 
     - name: 清理旧记录
       if: steps.ver.outputs.run == 'true'
-      uses: Mattraks/delete-workflow-runs@master
+      uses: Mattraks/delete-workflow-runs@v2
       with:
         retain_days: 5
         keep_minimum_runs: 10

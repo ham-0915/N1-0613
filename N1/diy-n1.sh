@@ -114,6 +114,7 @@ uci add_list nginx._lan.listen='[::]:80 default_server'
 uci add_list nginx._lan.include='conf.d/*.locations'
 uci set nginx._lan.access_log='off'
 uci commit nginx
+/etc/init.d/nginx restart
 exit 0
 EOF
 chmod +x package/base-files/files/etc/uci-defaults/99-fix-nginx-quickfile

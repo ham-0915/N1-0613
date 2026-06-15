@@ -151,7 +151,7 @@ jobs:
       working-directory: /workdir/openwrt
       run: |
         export PATH="/usr/lib/ccache:$PATH"
-        ccache -M 2G && ccache -z
+        ccache -M 4G && ccache -z
         echo "::group::多线程编译 -j$(nproc)"
         if make -j$(nproc); then
           echo "status=success" >> "$GITHUB_OUTPUT"

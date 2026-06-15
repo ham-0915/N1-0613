@@ -39,10 +39,6 @@ rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,o
 [ "$VERSION" = "24.10" ] && rm -rf feeds/packages/admin/zabbix
 sed -i '/mjpg-streamer/d;/onionshare/d' .config 2>/dev/null || true
 find feeds/packages -type d -name "*python*ubus*" -exec rm -rf {} + 2>/dev/null || true
-find feeds/packages -type d \( -name "*gst*" -o -name "*gstreamer*" \) -exec rm -rf {} + 2>/dev/null || true
-# 删除所有依赖 gstreamer 的包（避免依赖缺失警告）
-grep -rl "DEPENDS.*gstreamer\|DEPENDS.*gst1" feeds/*/Makefile 2>/dev/null | \
-  xargs -I{} dirname {} | sort -u | xargs rm -rf 2>/dev/null || true
 
 # ============================================================
 # 克隆 Passwall 2

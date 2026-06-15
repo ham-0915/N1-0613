@@ -39,7 +39,7 @@ rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,o
 [ "$VERSION" = "24.10" ] && rm -rf feeds/packages/admin/zabbix
 sed -i '/mjpg-streamer/d;/onionshare/d' .config 2>/dev/null || true
 find feeds/packages -type d -name "*python*ubus*" -exec rm -rf {} + 2>/dev/null || true
-rm -rf feeds/packages/multimedia/gst1-plugins-base
+rm -rf feeds/packages/multimedia/gst1-plugins-*
 
 # ============================================================
 # 克隆 Passwall 2

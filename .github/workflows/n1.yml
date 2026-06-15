@@ -114,7 +114,6 @@ jobs:
           "src-git luci https://github.com/immortalwrt/luci.git;$BRANCH" \
           "src-git routing https://github.com/openwrt/routing.git;$BRANCH" \
           "src-git telephony https://github.com/openwrt/telephony.git;$BRANCH" \
-          "src-git video https://github.com/openwrt/video.git;$BRANCH" \
           > openwrt/feeds.conf.default
         cat openwrt/feeds.conf.default
         echo "::endgroup::"

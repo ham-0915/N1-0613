@@ -217,7 +217,7 @@ jobs:
       if: steps.ver.outputs.run == 'true' && steps.compile.outputs.status == 'success'
       uses: ncipollo/release-action@v1
       with:
-        name: "OpenWrt-N1 ${{ env.TAG }} ${{ steps.release.outputs.date }}"
+        name: "OpenWrt-N1 ${{ env.TAG }}"
         tag: ${{ steps.release.outputs.tag }}
         artifacts: /opt/openwrt_packit/output/openwrt*
         allowUpdates: true

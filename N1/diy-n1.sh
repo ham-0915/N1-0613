@@ -39,6 +39,7 @@ rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,o
 [ "$VERSION" = "24.10" ] && rm -rf feeds/packages/admin/zabbix
 sed -i '/mjpg-streamer/d;/onionshare/d' .config 2>/dev/null || true
 find feeds/packages -type d -name "*python*ubus*" -exec rm -rf {} + 2>/dev/null || true
+rm -rf feeds/packages/multimedia/gst1-plugins-base
 
 # ============================================================
 # 克隆 Passwall 2
@@ -55,6 +56,7 @@ log "克隆第三方插件"
 git clone --depth=1 https://github.com/ophub/luci-app-amlogic package/amlogic
 git clone --depth=1 https://github.com/vernesong/OpenClash package/openclash
 git clone --depth=1 https://github.com/nikkinikki-org/OpenWrt-nikki package/nikki
+rm -rf package/nikki/mihomo-alpha
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist2
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/luci-app-quickfile

@@ -199,6 +199,7 @@ jobs:
         {
           echo "- **源码**: https://github.com/immortalwrt/immortalwrt/tree/$BRANCH"
           echo "- **网关**: 192.168.123.2 | **账户**: root | **密码**: password"
+          echo "- **编译时间**: $DATE"
           echo ""
           echo "### 更新日志"
           [ -f "N1/logs.txt" ] && cat "N1/logs.txt" || echo "- 常规更新"

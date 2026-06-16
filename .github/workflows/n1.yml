@@ -1,6 +1,8 @@
 name: N1-ImmortalWrt
 
 on:
+  schedule:
+    - cron: '0 17 * * *'
   workflow_dispatch:
     inputs:
       version:

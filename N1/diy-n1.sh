@@ -40,6 +40,8 @@ rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,o
 sed -i '/mjpg-streamer/d;/onionshare/d' .config 2>/dev/null || true
 find feeds/packages -type d -name "*python*ubus*" -exec rm -rf {} + 2>/dev/null || true
 
+sed -i 's/+PACKAGE_mihomo-alpha//g; s/+PACKAGE_mihomo-meta//g' package/feeds/mihomo/luci-app-mihomo/Makefile 2>/dev/null || true
+
 # 25.12 去除 dockerman （代码示例）
 #[ "$VERSION" = "25.12" ] && sed -i '/CONFIG_PACKAGE_luci-app-dockerman/d' .config 2>/dev/null || true
 

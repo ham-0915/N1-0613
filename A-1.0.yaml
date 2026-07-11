@@ -446,7 +446,7 @@ proxy-groups:
   # ------- 顶层策略组 -------
   - name: '默认代理'
     <<: *group_common_select
-    proxies: ['香港', '日本', '美国', '新加坡', '台湾省', '自动选择', '负载均衡', '其他节点']
+    proxies: ['日本', '香港', '美国', '新加坡', '台湾省', '自动选择', '负载均衡', '其他节点']
     icon: 'https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png'
 
   - name: '自动选择'

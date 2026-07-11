@@ -21,7 +21,7 @@ proxy-providers:
       additional-prefix: "[喵喵付费]"
 
   交个朋友:
-    url: "https://sub168.top/befriends.one/fuckyou?token=408deed5612e58e81da6f67e77d6a4b9"
+    url: "https://11212.top/s/749f8f630d455fac7faf71c851df3626"
     type: http
     filter: "^((?!(网|更新|流量|套餐|德|度|奥地利|到期|重置|群|有效|优惠|电报)).)*$"
     interval: 86400

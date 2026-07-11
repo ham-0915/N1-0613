@@ -172,19 +172,19 @@ rules:
 
   - RULE-SET,youtube,YouTube         
   - RULE-SET,google,Google           
-  - RULE-SET,google_ip,Google,no-resolve
   - RULE-SET,ai_domain,AI模型        
   - RULE-SET,telegram,代理
-  - RULE-SET,telegram_ip,代理,no-resolve
   - RULE-SET,github,代理
   - RULE-SET,twitter,代理
-  - RULE-SET,twitter_ip,代理,no-resolve
   - RULE-SET,netflix_domain,NETFLIX
-  - RULE-SET,netflix_ip,NETFLIX,no-resolve
   - RULE-SET,tiktok_domain,TikTok
 
-  - RULE-SET,gfw,代理
+  - RULE-SET,google_ip,Google,no-resolve
+  - RULE-SET,telegram_ip,代理,no-resolve
+  - RULE-SET,twitter_ip,代理,no-resolve
+  - RULE-SET,netflix_ip,NETFLIX,no-resolve
 
+  - RULE-SET,gfw,代理
   - RULE-SET,cn_domain,DIRECT
   - RULE-SET,cn_ip,DIRECT,no-resolve
   - MATCH,漏网之鱼

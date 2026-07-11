@@ -5,8 +5,41 @@
 # =====================================================
 
 # ------- 机场订阅 -------
+proxy-providers:
+  喵喵付费:
+    url: "https://subcrib.vpnmiao.com/s/0806ca3c91c0dad4a2973395aedeca90"
+    type: http
+    filter: "^((?!(网|更新|流量|套餐|德|度|奥地利|到期|重置|群|有效|优惠|电报)).)*$"
+    interval: 86400
+    health-check: { enable: true, url: "https://www.gstatic.com/generate_204", interval: 300, timeout: 5000 }
+    override:
+      additional-prefix: "[喵喵付费]"
 
+  交个朋友:
+    url: "https://sub168.top/befriends.one/fuckyou?token=408deed5612e58e81da6f67e77d6a4b9"
+    type: http
+    filter: "^((?!(网|更新|流量|套餐|德|度|奥地利|到期|重置|群|有效|优惠|电报)).)*$"
+    interval: 86400
+    override:
+      additional-prefix: "[交个朋友]"
 
+  翻了么:
+    url: "https://11212.top/s/749f8f630d455fac7faf71c851df3626"
+    type: http
+    filter: "^((?!(网|更新|流量|套餐|德|度|奥地利|到期|重置|群|有效|优惠|电报)).)*$"
+    interval: 86400
+    health-check: { enable: true, url: "https://www.gstatic.com/generate_204", interval: 300, timeout: 5000 }
+    override:
+      additional-prefix: "[翻了么]"
+
+  纵云梯:
+    url: "https://download.8886698.xyz/api/v1/client/subscribe?token=ac3316a8e90b02f292b99f1da68fa41f"
+    type: http
+    filter: "^((?!(网|更新|流量|套餐|德|度|奥地利|到期|重置|群|有效|优惠|电报)).)*$"
+    interval: 86400
+    health-check: { enable: true, url: "https://www.gstatic.com/generate_204", interval: 300, timeout: 5000 }
+    override:
+      additional-prefix: "[纵云梯]"
 
 mixed-port: 7890
 log-level: error

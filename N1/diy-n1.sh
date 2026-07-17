@@ -105,5 +105,24 @@ EOF
 }
 
 # ============================================================
+log "注入 Nginx Quickfile 修复"
+mkdir -p package/base-files/files/etc/uci-defaults
+cat > package/base-files/files/etc/uci-defaults/99-fix-nginx-quickfile << 'EOF'
+#!/bin/sh
+uci set nginx.global.uci_enable='true'
+uci del nginx._lan; uci del nginx._redirect2ssl
+uci add nginx server; uci rename nginx.@server[0]='_lan'
+uci set nginx._lan.server_name='_lan'
+uci add_list nginx._lan.listen='80 default_server'
+uci add_list nginx._lan.listen='[::]:80 default_server'
+uci add_list nginx._lan.include='conf.d/*.locations'
+uci set nginx._lan.access_log='off'
+uci commit nginx
+/etc/init.d/nginx restart
+exit 0
+EOF
+chmod +x package/base-files/files/etc/uci-defaults/99-fix-nginx-quickfile
+
+# ============================================================
 
 log "完成 ✓"

@@ -76,6 +76,7 @@ git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/openwrt-ba
 [ "$VERSION" = "24.10" ] && {
   log "24.10 软件源配置"
   mkdir -p package/base-files/files/etc/opkg
+  
   cat > package/base-files/files/etc/opkg.conf << 'EOF'
 dest root /
 dest ram /tmp
@@ -87,20 +88,11 @@ arch aarch64_generic 200
 arch aarch64_cortex-a53 300
 EOF
 
-  cat > package/base-files/files/etc/opkg/distfeeds.conf << 'EOF'
-src/gz openwrt_kiddin9 https://dl.openwrt.ai/latest/packages/aarch64_cortex-a53/kiddin9
-src/gz immortalwrt_core https://mirrors.aliyun.com/openwrt/releases/24.10.0/targets/armsr/armv8/packages
-src/gz immortalwrt_base https://mirrors.aliyun.com/openwrt/releases/24.10.0/packages/aarch64_generic/base
-src/gz immortalwrt_luci https://mirrors.aliyun.com/openwrt/releases/24.10.0/packages/aarch64_generic/luci
-src/gz immortalwrt_packages https://mirrors.aliyun.com/openwrt/releases/24.10.0/packages/aarch64_generic/packages
-src/gz immortalwrt_routing https://mirrors.aliyun.com/openwrt/releases/24.10.0/packages/aarch64_generic/routing
-src/gz immortalwrt_telephony https://mirrors.aliyun.com/openwrt/releases/24.10.0/packages/aarch64_generic/telephony
-EOF
-
   cat > package/base-files/files/etc/opkg/customfeeds.conf << 'EOF'
 # add your custom package feeds here
 #
 # src/gz example_feed_name http://www.example.com/path/to/files
+src/gz openwrt_kiddin9 https://dl.openwrt.ai/latest/packages/aarch64_cortex-a53/kiddin9
 EOF
 }
 

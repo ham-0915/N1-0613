@@ -70,7 +70,8 @@ sed -i "/option 'tun_stack' 'mixed'/d" package/nikki/nikki/files/nikki.conf
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist2
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/luci-app-quickfile
-git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
+rm -rf package/lucky
+git clone --depth=1 https://github.com/sirpdboy/luci-app-lucky.git package/lucky
 git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/luci-app-bandix
 git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/openwrt-bandix
 

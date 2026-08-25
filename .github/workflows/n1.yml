@@ -64,7 +64,7 @@ jobs:
       uses: easimon/maximize-build-space@master
       with:
         root-reserve-mb: 10240
-        swap-size-mb: 1024
+        swap-size-mb: 2048
         build-mount-path: /workdir
         overprovision-lvm: 'true'
         remove-dotnet: 'true'

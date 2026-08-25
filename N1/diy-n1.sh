@@ -22,18 +22,6 @@ log "替换 Golang → 26.x"
 rm -rf feeds/packages/lang/golang
 git clone --depth=1 -b 26.x https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang
 
-# 只修复25.12编译失败的问题
-if [ "$VERSION" = "25.12" ]; then
-  log "修复 rust: 禁用 download-ci-llvm（避免 CI LLVM 快照过期 404）"
-  RUST_MK="feeds/packages/lang/rust/Makefile"
-  if [ -f "$RUST_MK" ] && ! grep -q 'download-ci-llvm=false' "$RUST_MK"; then
-    sed -i '/^HOST_CONFIGURE_ARGS = \\/a\  --set=llvm.download-ci-llvm=false \\' "$RUST_MK"
-    log "已为 $RUST_MK 注入 --set=llvm.download-ci-llvm=false"
-  else
-    log "rust Makefile 未找到或已包含该设置，跳过"
-  fi
-fi
-
 # ============================================================
 # 清理 feeds 冲突包
 # ============================================================
@@ -41,7 +29,10 @@ log "清理冲突包"
 PASSWALL_PKGS=(chinadns-ng dns2socks geoview hysteria ipt2socks microsocks naiveproxy \
   shadow-tls shadowsocks-libev shadowsocks-rust shadowsocksr-libev simple-obfs sing-box \
   tcping trojan-plus tuic-client v2ray-geodata v2ray-plugin xray-core xray-plugin)
-for pkg in "${PASSWALL_PKGS[@]}"; do rm -rf "feeds/packages/net/$pkg"; done
+for pkg in "${PASSWALL_PKGS[@]}"; do
+  rm -rf "feeds/packages/net/$pkg"
+  rm -rf "package/feeds/packages/$pkg"
+done
 
 rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,openlist2,passwall,passwall2} \
   feeds/packages/net/{mosdns,openlist} \

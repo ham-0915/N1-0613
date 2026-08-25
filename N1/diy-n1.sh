@@ -23,6 +23,25 @@ rm -rf feeds/packages/lang/golang
 git clone --depth=1 -b 26.x https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang
 
 # ============================================================
+# 修复 rust host 编译失败（25.12 专属问题）
+# 原因：rust 包 bootstrap 默认 download-ci-llvm=true，会去
+# https://ci-artifacts.rust-lang.org 下载对应 commit 的预编译 LLVM，
+# 但该 CI 产物有保留期限，过期后 404，导致 host-compile 失败。
+# 上游 immortalwrt/packages 的 openwrt-25.12 分支尚未修复此问题
+# （openwrt/packages#26623、immortalwrt/packages#1607 均已 closed
+# as not planned），故在此手动关闭该开关，强制本地编译 LLVM。
+# 注意：会增加编译耗时（预计 +20~40 分钟），请留意 Actions 超时设置。
+# ============================================================
+log "修复 rust: 禁用 download-ci-llvm（避免 CI LLVM 快照过期 404）"
+RUST_MK="feeds/packages/lang/rust/Makefile"
+if [ -f "$RUST_MK" ] && ! grep -q 'download-ci-llvm=false' "$RUST_MK"; then
+  sed -i '/^HOST_CONFIGURE_ARGS = \\/a\  --set=llvm.download-ci-llvm=false \\' "$RUST_MK"
+  log "已为 $RUST_MK 注入 --set=llvm.download-ci-llvm=false"
+else
+  log "rust Makefile 未找到或已包含该设置，跳过"
+fi
+
+# ============================================================
 # 清理 feeds 冲突包
 # ============================================================
 log "清理冲突包"

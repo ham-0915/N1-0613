@@ -173,7 +173,6 @@ jobs:
       run: |
         echo "::group::打包固件"
         mkdir -p /workdir/upload openwrt-armvirt
-        cp openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz /workdir/upload/
         mv openwrt/bin/targets/*/*/*-generic-rootfs.tar.gz openwrt-armvirt/
         rm -rf /workdir/openwrt
         echo "::endgroup::"

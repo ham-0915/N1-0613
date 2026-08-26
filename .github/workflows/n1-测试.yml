@@ -1,4 +1,4 @@
-name: N1-ImmortalWrt
+name: N1-测试
 
 on:
   schedule:
@@ -142,8 +142,11 @@ jobs:
         make defconfig
         echo "::endgroup::"
 
-        echo "::group::检查 sing-box / xray 是否被选中"
-        grep -iE "sing.?box|xray" .config || echo "⚠️ 未找到任何相关配置项，说明依赖没被拉进来"
+        echo "::group::检查 passwall2 全部组件是否被选中"
+        grep -E "^CONFIG_PACKAGE_luci-app-passwall2" .config
+        echo "---"
+        grep -iE "sing.?box|xray|hysteria|tuic|shadowsocks-rust|v2ray-plugin|naiveproxy|haproxy" .config \
+          || echo "⚠️ 未找到任何相关配置项，说明依赖没被拉进来"
         echo "::endgroup::"
 
         echo "::group::检查 passwall-packages 源码是否存在"

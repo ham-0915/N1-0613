@@ -38,15 +38,9 @@ rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,o
   feeds/packages/net/{mosdns,openlist}
 
 # [FIX] 修正 mjpg-streamer / onionshare-cli 路径（原路径缺少分类目录，静默失败）
-rm -rf feeds/luci/applications/luci-app-mjpg-streamer package/feeds/luci/luci-app-mjpg-streamer
+# rm -rf feeds/luci/applications/luci-app-mjpg-streamer package/feeds/luci/luci-app-mjpg-streamer
 # onionshare-cli 是 Python 包，目录在 lang/ 下
-rm -rf feeds/packages/lang/onionshare-cli package/feeds/packages/onionshare-cli
-
-
-# [ "$VERSION" = "24.10" ] && rm -rf feeds/packages/admin/zabbix
-# sed -i '/mjpg-streamer/d;/onionshare/d' .config 2>/dev/null || true
-# find feeds/packages -type d -name "*python*ubus*" -exec rm -rf {} + 2>/dev/null || true
-# sed -i 's/+PACKAGE_mihomo-alpha//g; s/+PACKAGE_mihomo-meta//g' package/feeds/mihomo/luci-app-mihomo/Makefile 2>/dev/null || true
+# rm -rf feeds/packages/lang/onionshare-cli package/feeds/packages/onionshare-cli
 
 # 25.12 去除 dockerman （代码示例）
 #[ "$VERSION" = "25.12" ] && sed -i '/CONFIG_PACKAGE_luci-app-dockerman/d' .config 2>/dev/null || true
@@ -78,7 +72,7 @@ git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/luci-app-quickfile
 
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
-# ── 修复 luci-app-lucky 不显示"未安装"/"收集数据..."/"复位"静默失效的问题 ───
+# ── 修复 luci-app-lucky 不显示"未安装"/"收集数据..."/"复位" 的问题 ───
 log "lucky: 修复 uhttpd 环境下 lucky 二进制调用因内存限制静默失败的问题"
 LUCKY_CTRL=package/lucky/luci-app-lucky/luasrc/controller/lucky.lua
 sed -i 's#luci.sys.exec("/usr/bin/lucky -info")#luci.sys.exec("ulimit -v unlimited 2>/dev/null; /usr/bin/lucky -info")#' "$LUCKY_CTRL"

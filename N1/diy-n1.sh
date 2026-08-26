@@ -35,14 +35,17 @@ PASSWALL_PKGS=(chinadns-ng dns2socks geoview hysteria ipt2socks microsocks naive
   tcping trojan-plus tuic-client v2ray-geodata v2ray-plugin xray-core xray-plugin)
 for pkg in "${PASSWALL_PKGS[@]}"; do rm -rf "feeds/packages/net/$pkg"; done
 rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,openlist2,passwall,passwall2} \
-  feeds/packages/net/{mosdns,openlist} \
-  feeds/luci/luci-app-mjpg-streamer feeds/packages/onionshare-cli \
-  package/feeds/luci/luci-app-mjpg-streamer package/feeds/packages/onionshare-cli
+  feeds/packages/net/{mosdns,openlist}
+
+# [FIX] 修正 mjpg-streamer / onionshare-cli 路径（原路径缺少分类目录，静默失败）
+rm -rf feeds/luci/applications/luci-app-mjpg-streamer package/feeds/luci/luci-app-mjpg-streamer
+# onionshare-cli 是 Python 包，目录在 lang/ 下
+rm -rf feeds/packages/lang/onionshare-cli package/feeds/packages/onionshare-cli
+
 
 # [ "$VERSION" = "24.10" ] && rm -rf feeds/packages/admin/zabbix
 # sed -i '/mjpg-streamer/d;/onionshare/d' .config 2>/dev/null || true
 # find feeds/packages -type d -name "*python*ubus*" -exec rm -rf {} + 2>/dev/null || true
-
 # sed -i 's/+PACKAGE_mihomo-alpha//g; s/+PACKAGE_mihomo-meta//g' package/feeds/mihomo/luci-app-mihomo/Makefile 2>/dev/null || true
 
 # 25.12 去除 dockerman （代码示例）

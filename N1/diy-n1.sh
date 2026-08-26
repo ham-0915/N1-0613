@@ -16,11 +16,15 @@ sed -i 's/192.168.1.1/192.168.123.2/g' package/base-files/files/bin/config_gener
 sed -i 's/ImmortalWrt/OpenWrt/g' package/base-files/files/bin/config_generate
 
 # ============================================================
-# 升级 Golang
+# Golang + lang rust
 # ============================================================
 log "替换 Golang → 26.x"
 rm -rf feeds/packages/lang/golang
 git clone --depth=1 -b 26.x https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang
+
+log "修复 lang-rust 出现404的问题"
+rm -rf feeds/packages/lang/rust
+git clone https://github.com/sbwml/packages_lang_rust feeds/packages/lang/rust
 
 # ============================================================
 # 清理 feeds 冲突包
@@ -29,10 +33,7 @@ log "清理冲突包"
 PASSWALL_PKGS=(chinadns-ng dns2socks geoview hysteria ipt2socks microsocks naiveproxy \
   shadow-tls shadowsocks-libev shadowsocks-rust shadowsocksr-libev simple-obfs sing-box \
   tcping trojan-plus tuic-client v2ray-geodata v2ray-plugin xray-core xray-plugin)
-for pkg in "${PASSWALL_PKGS[@]}"; do
-  rm -rf "feeds/packages/net/$pkg"
-  rm -rf "package/feeds/packages/$pkg"
-done
+for pkg in "${PASSWALL_PKGS[@]}"; do rm -rf "feeds/packages/net/$pkg"; done
 
 rm -rf feeds/luci/applications/luci-app-{lucky,mosdns,nikki,openclash,openlist,openlist2,passwall,passwall2} \
   feeds/packages/net/{mosdns,openlist} \
@@ -73,16 +74,7 @@ sed -i "/option 'tun_stack' 'mixed'/d" package/nikki/nikki/files/nikki.conf
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist2
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/luci-app-quickfile
-
 git clone --depth=1 https://github.com/gdy666/luci-app-lucky package/lucky
-# ── 修复 luci-app-lucky 在虚拟内存受限环境下调用 lucky 二进制返回空、
-#    导致误报"未安装"/"收集数据..."/"复位"静默失效的问题 ─────────────
-log "lucky: 修复 uhttpd 环境下 lucky 二进制调用因内存限制静默失败的问题"
-LUCKY_CTRL=package/lucky/luci-app-lucky/luasrc/controller/lucky.lua
-sed -i 's#luci.sys.exec("/usr/bin/lucky -info")#luci.sys.exec("ulimit -v unlimited 2>/dev/null; /usr/bin/lucky -info")#' "$LUCKY_CTRL"
-sed -i 's#luci.sys.exec("lucky -baseConfInfo -cd "..configPath)#luci.sys.exec("ulimit -v unlimited 2>/dev/null; lucky -baseConfInfo -cd "..configPath)#' "$LUCKY_CTRL"
-sed -i 's#luci.sys.exec(cmd)#luci.sys.exec("ulimit -v unlimited 2>/dev/null; "..cmd)#' "$LUCKY_CTRL"
-
 git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/luci-app-bandix
 git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/openwrt-bandix
 

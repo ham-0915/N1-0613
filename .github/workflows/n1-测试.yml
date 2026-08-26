@@ -1,4 +1,4 @@
-name: N1-测试
+name: N1-ImmortalWrt
 
 on:
   schedule:
@@ -138,6 +138,11 @@ jobs:
       if: steps.ver.outputs.run == 'true'
       working-directory: /workdir/openwrt
       run: |
+        echo "::group::查看 passwall2 Makefile 真实选项定义"
+        grep -B2 -A2 "^config PACKAGE_luci-app-passwall2_" package/passwall2/luci-app-passwall2/Makefile || \
+          cat package/passwall2/luci-app-passwall2/Makefile
+        echo "::endgroup::"
+
         echo "::group::make defconfig"
         make defconfig
         echo "::endgroup::"

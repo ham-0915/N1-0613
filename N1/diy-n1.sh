@@ -132,4 +132,38 @@ EOF
 chmod +x package/base-files/files/etc/uci-defaults/99-fix-nginx-quickfile
 # ============================================================
 
+# ============================================================
+# 强制 Clashoo 与 Nikki 默认使用 Mihomo 稳定版内核
+# ============================================================
+log "设置 Clashoo 与 Nikki 默认使用 Mihomo 稳定版内核"
+
+# 1. 修正 Clashoo 的默认内核下载/选择渠道为 stable/latest
+if [ -d "package/openwrt-clashoo" ]; then
+    # 将源码中的 Alpha 标签替换为稳定版 release 路径
+    find package/openwrt-clashoo -type f \( -name "*.sh" -o -name "*.lua" -o -name "*.config" \) \
+        -exec sed -i 's#Prerelease-Alpha#latest#g' {} +
+    find package/openwrt-clashoo -type f \( -name "*.sh" -o -name "*.lua" -o -name "*.config" \) \
+        -exec sed -i "s/option core_version '.*'/option core_version 'stable'/g" {} +
+fi
+
+# 2. 修正 Nikki 的默认 UCI 配置，锁定 core_version 为 stable
+if [ -d "package/nikki" ]; then
+    sed -i "s/option core_version '.*'/option core_version 'stable'/g" package/nikki/nikki/files/nikki.conf 2>/dev/null || true
+    # 强制将预置的下载分支由 alpha 改为 release
+    find package/nikki -type f \( -name "*.sh" -o -name "*.lua" -o -name "nikki.conf" \) \
+        -exec sed -i 's/alpha/release/g' {} + 2>/dev/null || true
+fi
+
+# 3. 避免首次刷机开机时两个插件同时自启抢占端口
+mkdir -p package/base-files/files/etc/uci-defaults
+cat > package/base-files/files/etc/uci-defaults/99-disable-clashoo-autostart << 'EOF'
+#!/bin/sh
+# 默认关闭 Clashoo 的开机自启，保留 Nikki（或手动开启）
+if [ -f /etc/init.d/clashoo ]; then
+    /etc/init.d/clashoo disable 2>/dev/null || true
+fi
+exit 0
+EOF
+chmod +x package/base-files/files/etc/uci-defaults/99-disable-clashoo-autostart
+
 log "完成 ✓"

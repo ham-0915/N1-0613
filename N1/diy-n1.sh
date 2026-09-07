@@ -67,6 +67,8 @@ sed -i "/option 'log_level' 'warning'/d" package/nikki/nikki/files/nikki.conf
 sed -i "\#option 'ui_url' 'https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip'#d" package/nikki/nikki/files/nikki.conf
 sed -i "/option 'tun_stack' 'mixed'/d" package/nikki/nikki/files/nikki.conf
 
+git clone --depth=1 https://github.com/kenzok8/openwrt-clashoo.git package/openwrt-clashoo
+
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist2
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/luci-app-quickfile

@@ -54,6 +54,7 @@ git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall2.git pa
 log "克隆第三方插件"
 git clone --depth=1 https://github.com/ophub/luci-app-amlogic package/amlogic
 git clone --depth=1 https://github.com/vernesong/OpenClash package/openclash
+git clone --depth=1 https://github.com/kenzok8/openwrt-clashoo.git package/openwrt-clashoo
 
 git clone --depth=1 https://github.com/nikkinikki-org/OpenWrt-nikki package/nikki
 # ── nikki 自定义三处设置为‘不修改’ ─────────────────────────────
@@ -61,9 +62,6 @@ log "nikki: 清除默认值 log_level/ui_url/tun_stack"
 sed -i "/option 'log_level' 'warning'/d" package/nikki/nikki/files/nikki.conf
 sed -i "\#option 'ui_url' 'https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip'#d" package/nikki/nikki/files/nikki.conf
 sed -i "/option 'tun_stack' 'mixed'/d" package/nikki/nikki/files/nikki.conf
-
-git clone --depth=1 https://github.com/kenzok8/openwrt-clashoo.git package/openwrt-clashoo
-
 git clone --depth=1 -b v5 https://github.com/sbwml/luci-app-mosdns package/mosdns
 git clone --depth=1 https://github.com/sbwml/luci-app-openlist2 package/openlist2
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/luci-app-quickfile

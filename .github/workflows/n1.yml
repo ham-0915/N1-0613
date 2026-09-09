@@ -78,7 +78,7 @@ jobs:
       run: |
         echo "::group::安装编译依赖"
         sudo -E apt-get -qq update
-        sudo -E apt-get -qq install --no-install-recommends ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+        sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
           bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk \
           gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool \
           libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \

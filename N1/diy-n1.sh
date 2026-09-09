@@ -106,7 +106,6 @@ EOF
 src/gz openwrt_kiddin9 https://dl.openwrt.ai/latest/packages/aarch64_cortex-a53/kiddin9
 EOF
 }
-──────────────────────────────────────────────────────────────
 
 # ============================================================
 log "注入 Nginx Quickfile 修复"
